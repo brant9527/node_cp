@@ -8,7 +8,7 @@ segfaultHandler.registerHandler("crash.log");
 // let mongoDo = require('../mongodb/index')
 let bodyParser = require('body-parser');
 const smsUtil = require('../config/index.js')
-
+const jwt = require('jsonwebtoken');  //用来生成token
 app.use('/', express.static('public'))
 app.use(bodyParser.json())
 app.use(logger('dev'))
