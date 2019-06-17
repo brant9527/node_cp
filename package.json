@@ -1,0 +1,28 @@
+{
+  "name": "node-server",
+  "version": "1.0.0",
+  "description": "to build server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brant9527/node-server.git"
+  },
+  "author": "brant9527",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brant9527/node-server/issues"
+  },
+  "homepage": "https://github.com/brant9527/node-server#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "fastify": "^1.2.0",
+    "mongo": "^0.1.0",
+    "mongoose": "^5.1.7",
+    "morgan": "^1.9.1",
+    "segfault-handler": "^1.0.1",
+    "serve-static": "^1.13.2"
+  }
+}
