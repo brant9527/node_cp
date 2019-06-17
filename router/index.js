@@ -5,8 +5,10 @@ let logger = require('morgan');
 
 const segfaultHandler = require('segfault-handler');
 segfaultHandler.registerHandler("crash.log");
-let mongoDo = require('../mongodb/index')
+// let mongoDo = require('../mongodb/index')
 let bodyParser = require('body-parser');
+const smsUtil = require('../config/index.js')
+
 app.use('/', express.static('public'))
 app.use(bodyParser.json())
 app.use(logger('dev'))
@@ -218,14 +220,17 @@ app.get('/address/about', function (request, reply) {
  * @param {*} phoneNum 
  */
 
-app.post('/getSms', function (request, reply) {
+app.post('/sms', function (request, reply) {
   let params = {}
-  if (request.query.phoneNum) {
-    params.phoneNum = phoneNum
-  } else if (request.query.endAddress) {
-
-  }
-
+  let mob= request.query.mob||'18959292098'
+  smsUtil.getResult(params,mob).then(res=>{
+    console.log(res)
+  }).catch(err=>{
+    console.log(err)
+  })
+  return reply.send({
+    result: true,
+  })
 })
 
 function reg(str) {

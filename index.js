@@ -1,6 +1,6 @@
 let app = require('./router/index')
 
-require('./mongodb/index')
+// require('./mongodb/index')
 
 
 var server = app.listen(80,'0.0.0.0', function () {

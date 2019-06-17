@@ -17,12 +17,14 @@
   },
   "homepage": "https://github.com/brant9527/node-server#readme",
   "dependencies": {
+    "axios": "^0.19.0",
     "express": "^4.16.3",
     "fastify": "^1.2.0",
     "mongo": "^0.1.0",
     "mongoose": "^5.1.7",
     "morgan": "^1.9.1",
     "segfault-handler": "^1.0.1",
-    "serve-static": "^1.13.2"
+    "serve-static": "^1.13.2",
+    "utf8": "^3.0.0"
   }
 }
