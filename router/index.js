@@ -1,23 +1,49 @@
 let express = require('express')
 let app = express()
+// let router = express.router()
 const path = require('path')
 let logger = require('morgan');
 
 const segfaultHandler = require('segfault-handler');
 segfaultHandler.registerHandler("crash.log");
-// let mongoDo = require('../mongodb/index')
+let mongoDo = require('../mongodb/index')
 let bodyParser = require('body-parser');
 const smsUtil = require('../config/index.js')
-const jwt = require('jsonwebtoken');  //用来生成token
+const jwt = require('jsonwebtoken'); //用来生成token
+
+const {
+  setExKey,
+  getKey
+} = require('../config/redis')
+const xss = require('node-xss').clean;
+const session = require('express-session')
+const cookieParser = require('cookie-parser')
+// const random = require('string-random')
+const middleLogin = require('../middlewares/checklogin')
 app.use('/', express.static('public'))
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
+
 app.use(logger('dev'))
+
 app.all('*', function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Content-Type");
   res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
   next();
 })
+app.use(session({
+  secret: 'zhangyubin',
+  cookie: {
+    maxAge: 3600 * 1000 * 24 * 7
+  },
+  resave: true,
+  saveUninitialized: true
+}))
+app.use(cookieParser())
+// router.use(middleLogin)
 /**
  * 发布行程
  */
@@ -36,7 +62,6 @@ app.post('/car/settrip', function (request, reply) {
  *修改行程
  */
 app.post('/car/updatetrip', function (request, reply) {
-  console.log(request.body)
   mongoDo.tripModel.update({
     _id: request.body._id
   }, request.body, function (err, docs) {
@@ -126,34 +151,50 @@ app.get('/isLogin', function (request, reply) {
 /**
  * 注册
  */
-app.post('/resign', function (request, reply) {
+app.post('/register', function (request, reply) {
+
   mongoDo.accountModel.find({
     num: request.body.num
-  }, function (err, docs) {
-    console.log(err, docs)
+  }, async function (err, docs) {
     if (err) {
       reply.send(err)
     }
     if (docs.length > 0) return reply.send({
-      result: false
+      code: 422,
+      result: false,
+      message: '账号已被注册'
     })
+    let code = await getKey(request.body.num)
+    if (code != request.body.code) {
+      return reply.send({
+        code: 422,
+        result: false,
+        message: '输入验证码有误'
+      })
+    }
     mongoDo.accountModel.create(request.body, function (err, docs) {
       if (err) {
         reply.send(err)
       }
       reply.send({
-        result: true
+        result: true,
+        code: 200
       })
     })
   })
 
 })
 /**
+ * 验证短信code
+ */
+
+/**
  * 
  * 登陆
  */
 app.post('/login', function (request, reply) {
-  mongoDo.accountModel.find(request.body, function (err, docs) {
+  let body = xss(request.body)
+  mongoDo.accountModel.find(body, function (err, docs) {
     if (err) {
       reply.send(err)
     }
@@ -161,6 +202,7 @@ app.post('/login', function (request, reply) {
       console.log(docs)
       reply.send({
         result: true,
+        code: 200,
         accountId: docs[0]._id
       })
     } else {
@@ -216,21 +258,57 @@ app.get('/address/about', function (request, reply) {
   })
 })
 /**
+ * 随机code
+ */
+function randomCode() {
+  let code = ''
+  for (let index = 0; index < 4; index++) {
+    code += Math.floor(Math.random() * 10)
+  }
+  return code
+}
+/**
  * 
- * @param {*} phoneNum 
+ * @param {*} num 
  */
 
 app.post('/sms', function (request, reply) {
-  let params = {}
-  let mob= request.query.mob||'18959292098'
-  smsUtil.getResult(params,mob).then(res=>{
-    console.log(res)
-  }).catch(err=>{
-    console.log(err)
+  let code = randomCode()
+  let params = code + ',120'
+  let num = request.query.num || '18959292098'
+  smsUtil.getResult(params, num).then(async res => {
+    let result = await setExKey(num, 120, code)
+    if (result === 'OK') {
+      return reply.status(200).send({
+        result: true,
+        code: 200
+      })
+    } else {
+      return reply.status(200).send({
+        result: false,
+        code: 503,
+        msg: '注册太频繁，请稍等'
+      })
+    }
+
+    // client.setex(phoneNum, 120, code, function (err, rep) {
+    //   if (err) {
+    //     return reply.status(200).send({
+    //       result: false,
+    //       code: 503,
+    //       msg: '注册太频繁，请稍等'
+    //     })
+    //   }
+    // })
+
+  }).catch(err => {
+    return reply.status(503).send({
+      result: false,
+      msg: err,
+      code: 503,
+    })
   })
-  return reply.send({
-    result: true,
-  })
+
 })
 
 function reg(str) {

@@ -31,3 +31,22 @@ this is my personal project to build server by node in centos7.4
  ### node&npm updata /node npm升级
  npm install -g npm
  n stable （稳定版）/ n latest （最新版） {select one}
+
+### macos redis 安装
+ brew search redis 
+ brew services start redis4.0
+ ### linux
+wget http://download.redis.io/releases/redis-4.0.6.tar.gz
+tar xzf redis-4.0.6.tar.gz
+cd redis-4.0.6
+make
+yum -y install wget //如果没有wget
+ yum -y install gcc
+
+  yum install cpp  　　　
+　yum install binutils　　　
+　 yum install glibc-kernheaders　　　
+　 yum install glibc-common　　　
+　 yum install glibc-devel　　　
+// 参考链接
+https://blog.csdn.net/fyihdg/article/details/79131879
