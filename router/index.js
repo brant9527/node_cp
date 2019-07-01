@@ -28,7 +28,7 @@ const lottery = require('./lottery/index')
 const main = require('./main/index')
 
 app.use('/', express.static('public'))
-app.use('/admin', express.static('admin'))
+app.use('/admin', express.static('admin'));
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({
   extended: false
@@ -55,7 +55,7 @@ app.use(cookieParser())
 app.use(function (req, res, next) {
   let token = req.get("Authorization")
   jwt.verify(token, keyConfig.secretKey, (error, decoded) => {
-    if (order.order.whites.includes(req.path)) {
+    if (order.order.whites.includes(req.path) || /\/css\/|\/js\/|/.test(req.path)) {
       next()
     } else {
       if (error) {
@@ -70,8 +70,6 @@ app.use(function (req, res, next) {
   })
 
 })
-
-
 
 
 /**

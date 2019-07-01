@@ -5,38 +5,7 @@ let mongoDo = require('../../mongodb/index')
 const jwt = require('jsonwebtoken'); //用来生成token
 const keyConfig = require('../../config/secretKey')
 const xss = require('node-xss').clean;
-/**
- * 发布咨询
- */
-router.post('/notice', function (request, reply) {
-  console.log('公告')
-  // mongoDo.tripModel.create(request.body, function (err, docs) {
-  //   if (err) {
-  //     reply.send(err)
-  //   }
-  //   reply.send({
-  //     result: true
-  //   })
-  // })
 
-})
-
-/**
- *修改行程
- */
-router.post('/updatetrip', function (request, reply) {
-  mongoDo.tripModel.update({
-    _id: request.body._id
-  }, request.body, function (err, docs) {
-    if (err) {
-      reply.send(err)
-    }
-    reply.send({
-      result: true
-    })
-  })
-
-})
 
 
 /**
