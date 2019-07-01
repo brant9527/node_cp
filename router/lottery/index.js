@@ -3,7 +3,6 @@ var router = express.Router(); //可使用 express.Router 类创建模块化、�
 let mongoDo = require('../../mongodb/index')
 
 const jwt = require('jsonwebtoken'); //用来生成token
-const cpconfig = require('../../config/cpconfig.js')
 const xss = require('node-xss').clean;
 
 const cp_config = require('../../config/cpConfig')
