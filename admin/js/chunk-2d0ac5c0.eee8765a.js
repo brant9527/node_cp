@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([["chunk-2d0ac5c0"],{"18cf":function(n,u,m){"use strict";m.r(u),u.default={list:[{num:"1"},{num:"2"},{num:"3"},{num:"4"},{num:"5"},{num:"6"},{num:"7"},{num:"8"},{num:"9"}]}}}]);
