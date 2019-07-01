@@ -1,6 +1,6 @@
 let express = require('express')
 let app = express()
-// let router = express.router()
+
 const path = require('path')
 let logger = require('morgan');
 
@@ -10,7 +10,8 @@ let mongoDo = require('../mongodb/index')
 let bodyParser = require('body-parser');
 const smsUtil = require('../config/index.js')
 const jwt = require('jsonwebtoken'); //用来生成token
-
+const keyConfig = require('../config/secretKey')
+// const uid = require('uid')
 const {
   setExKey,
   getKey
@@ -18,8 +19,14 @@ const {
 const xss = require('node-xss').clean;
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
+const order = require('../config/path')
 // const random = require('string-random')
 const middleLogin = require('../middlewares/checklogin')
+
+const admin = require('./admin/index')
+const lottery = require('./lottery/index')
+const main = require('./main/index')
+
 app.use('/', express.static('public'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({
@@ -35,7 +42,7 @@ app.all('*', function (req, res, next) {
   next();
 })
 app.use(session({
-  secret: 'zhangyubin',
+  secret: keyConfig.secretKey,
   cookie: {
     maxAge: 3600 * 1000 * 24 * 7
   },
@@ -44,110 +51,28 @@ app.use(session({
 }))
 app.use(cookieParser())
 // router.use(middleLogin)
-/**
- * 发布行程
- */
-app.post('/car/settrip', function (request, reply) {
-  mongoDo.tripModel.create(request.body, function (err, docs) {
-    if (err) {
-      reply.send(err)
-    }
-    reply.send({
-      result: true
-    })
-  })
-
-})
-/**
- *修改行程
- */
-app.post('/car/updatetrip', function (request, reply) {
-  mongoDo.tripModel.update({
-    _id: request.body._id
-  }, request.body, function (err, docs) {
-    if (err) {
-      reply.send(err)
-    }
-    reply.send({
-      result: true
-    })
-  })
-
-})
-/**
- * 获取行程
- */
-app.get('/car/gettrip', function (request, reply) {
-  let params = {}
-  console.log(request.query)
-  if (request.query.startAddress) {
-    params.startAddress = reg(request.query.startAddress)
-  } else if (request.query.endAddress) {
-    params.endAddress = reg(request.query.endAddress)
-  }
-  params.creatTime = {
-    $lt: Number(request.query.now)
-  }
-  params.roleValue = request.query.roleValue
-  mongoDo.tripModel.find(params, null, {
-    skip: Number(request.query.currentIndex) * 10,
-    limit: 10
-  }, function (err, docs) {
-    if (err) {
-      reply.send(err)
-    }
-    if (docs.length > 0) {
-      reply.status(200).send({
-        result: true,
-        data: docs
-      })
+app.use(function (req, res, next) {
+  let token = req.get("Authorization")
+  jwt.verify(token, keyConfig.secretKey, (error, decoded) => {
+    if (order.order.whites.includes(req.path)) {
+      next()
     } else {
-      reply.status(200).send({
-        result: false
-      })
+      if (error) {
+        return res.status(401).send({
+          code: 401,
+          result: false
+        })
+      } else {
+        next()
+      }
     }
-
   })
 
 })
-/**
- * 通过手机好吗获取已经发布行程
- */
-app.get('/car/gettripByPhone', function (request, reply) {
-  mongoDo.tripModel.find({
-    accountId: request.query.accountId
-  }, function (err, docs) {
-    if (err) {
-      reply.send(err)
-    }
-    if (docs.length < 1) reply.status(500).send({
-      message: '没有相关记录'
-    })
-    else reply.send({
-      carList: docs
-    })
-  })
 
-})
-/**
- * 判断是否已经登陆
- */
-app.get('/isLogin', function (request, reply) {
-  mongoDo.accountModel.find({
-    _id: request.query.accountId
-  }, function (err, docs) {
-    if (err) {
-      reply.send(err)
-    }
-    if (docs.length > 0) reply.send({
-      result: true
-    })
-    else reply.send({
-      result: false
-    })
-  })
 
-})
+
+
 /**
  * 注册
  */
@@ -155,16 +80,20 @@ app.post('/register', function (request, reply) {
 
   mongoDo.accountModel.find({
     num: request.body.num
-  }, async function (err, docs) {
-    if (err) {
-      reply.send(err)
-    }
-    if (docs.length > 0) return reply.send({
+  }).then(async doc => {
+    if (doc.length > 0) return reply.send({
       code: 422,
       result: false,
       message: '账号已被注册'
     })
     let code = await getKey(request.body.num)
+    if (code) {
+      return reply.send({
+        code: 422,
+        result: false,
+        message: '验证码已过期'
+      })
+    }
     if (code != request.body.code) {
       return reply.send({
         code: 422,
@@ -172,17 +101,18 @@ app.post('/register', function (request, reply) {
         message: '输入验证码有误'
       })
     }
-    mongoDo.accountModel.create(request.body, function (err, docs) {
-      if (err) {
-        reply.send(err)
-      }
+    request.body.role = 2
+    mongoDo.accountModel.create(request.body).then(() => {
       reply.send({
         result: true,
         code: 200
       })
+    }).catch(err => {
+      reply.send(err)
     })
+  }).catch(err => {
+    reply.send(err)
   })
-
 })
 /**
  * 验证短信code
@@ -193,24 +123,35 @@ app.post('/register', function (request, reply) {
  * 登陆
  */
 app.post('/login', function (request, reply) {
+
   let body = xss(request.body)
-  mongoDo.accountModel.find(body, function (err, docs) {
-    if (err) {
-      reply.send(err)
-    }
+  mongoDo.accountModel.find(body).then((docs) => {
     if (docs.length > 0) {
-      console.log(docs)
-      reply.send({
-        result: true,
-        code: 200,
-        accountId: docs[0]._id
+      jwt.sign({
+        name: request.body.num,
+      }, keyConfig.secretKey, (err, token) => {
+        return reply.send({
+          result: true,
+          code: 200,
+          data: {
+            token: token
+          }
+        })
       })
     } else {
-      reply.status(500).send({
-        result: false,
-        message: '用户账号或密码错误'
+      return reply.status(422).send({
+        result: true,
+        code: 422,
+        message: '此账号待注册'
       })
     }
+
+  }).catch(err => {
+    return reply.status(401).send({
+      result: false,
+      message: '用户账号或密码错误',
+      code: 401
+    })
   })
 })
 /**
@@ -275,8 +216,15 @@ function randomCode() {
 app.post('/sms', function (request, reply) {
   let code = randomCode()
   let params = code + ',120'
-  let num = request.query.num || '18959292098'
+  let num = request.body.num
   smsUtil.getResult(params, num).then(async res => {
+    if (res.data.code !== '000000') {
+      return reply.status(200).send({
+        result: false,
+        code: 503,
+        msg: res.msg
+      })
+    }
     let result = await setExKey(num, 120, code)
     if (result === 'OK') {
       return reply.status(200).send({
@@ -310,8 +258,9 @@ app.post('/sms', function (request, reply) {
   })
 
 })
+app.use('/admin', admin)
+app.use('/lottery', lottery)
+app.use('/main', main)
 
-function reg(str) {
-  return new RegExp(str)
-}
+
 module.exports = app
