@@ -43,25 +43,49 @@ function getLotteryData(out_config, ) {
         mongoDo.lotteryModel.insertMany(data).then(res => {
           mongoDo.planPlaysModel.find({
             pcode: config.code
-          }).then(docs => {
+          }).then(async docs => {
             let results = []
-            docs.forEach(item => {
+            // let yc_results = []
+
+            docs.forEach(async item => {
+              await mongoDo.planPlaysModel.remove({
+                pcode: config.code,
+                code: item.code,
+                playCode: item.playCode,
+                expect: lastDoc[0].expect
+              })
               let obj = juagement(item, lastDoc[0])
+              let index = 0
               if (obj) {
-                let index = 0
                 if (item.list.length !== item.index + 1) {
                   index = item.index + 1
                 }
                 mongoDo.planPlaysModel.update({
                   _id: item.id
                 }, {
-                  'index': index
+                  'index': index,
                 }).then(res => {
                   console.log('更新成功')
                 })
                 results.push(obj)
               }
-
+              let last_doc = lastDoc[0]
+              let yc_currentNum = item.list[index]
+              let yc_expect_numisout = (Number(last_doc.expect) + 1) % 100 > 59 ? (Number(last_doc.expect) + 42) : (Number(last_doc.expect) + 1)
+              let yc_expect = yc_expect_numisout
+              let yc_result = {
+                expect: yc_expect + '',
+                pcode: item.pcode,
+                code: item.code,
+                name: item.name,
+                playName: item.playName,
+                playCode: item.playCode,
+                planNum: yc_currentNum,
+                lotteryNum: '',
+                flag: '预测中',
+                createTime: new Date()
+              }
+              results.push(yc_result)
             })
             // 打算更新多条index 
             // let ids = docs.map(item => item._id)
@@ -509,12 +533,13 @@ function juagement(item, doc) {
   let currentNum = list[index]
   let flagIsZuxuan = currentNum.indexOf('*') > -1
   let result = {
-    expect: doc.expect.substr(-3, 3),
+    expect: doc.expect,
     pcode: item.pcode,
     code: item.code,
     name: item.name,
     playName: item.playName,
     planNum: currentNum,
+    playCode: item.playCode,
     lotteryNum: lottery,
     flag: '挂',
     createTime: new Date()

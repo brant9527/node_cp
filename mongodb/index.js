@@ -86,7 +86,7 @@ let planResultScheme = Scheme({
   pcode: String,
   planNum: String,
   planName: String,
-  playName: String,
+  playCode: String,
   name: String,
   pname: String,
   lotteryNum: String,
