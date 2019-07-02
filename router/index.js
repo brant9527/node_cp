@@ -86,7 +86,7 @@ app.post('/register', function (request, reply) {
       message: '账号已被注册'
     })
     let code = await getKey(request.body.num)
-    if (code) {
+    if (request.body.code && !code) {
       return reply.send({
         code: 422,
         result: false,
@@ -214,7 +214,7 @@ function randomCode() {
 
 app.post('/sms', function (request, reply) {
   let code = randomCode()
-  let params = code + ',120'
+  let params = code
   let num = request.body.num
   smsUtil.getResult(params, num).then(async res => {
     if (res.data.code !== '000000') {
@@ -224,7 +224,7 @@ app.post('/sms', function (request, reply) {
         msg: res.msg
       })
     }
-    let result = await setExKey(num, 120, code)
+    let result = await setExKey(num, 180, code)
     if (result === 'OK') {
       return reply.status(200).send({
         result: true,

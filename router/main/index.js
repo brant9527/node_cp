@@ -9,6 +9,7 @@ const xss = require('node-xss').clean;
  */
 router.post('/addNotice', function (request, reply) {
   let body = xss(request.body)
+  body.createTime = new Date().getTime()
 
   mongoDo.noticeModel.create(body).then(res => {
     reply.send({
@@ -68,7 +69,7 @@ router.get('/getNotice', function (request, reply) {
  */
 router.post('/addNews', function (request, reply) {
   let body = xss(request.body)
-
+  body.createTime = new Date().getTime()
   mongoDo.newsModel.create(body).then(res => {
     reply.send({
       code: 200,
@@ -108,7 +109,8 @@ router.post('/delNews', function (request, reply) {
  * 查询新闻
  */
 router.get('/getNews', function (request, reply) {
-  mongoDo.newsModel.find().then(docs => {
+  let body = xss(request.query)
+  mongoDo.newsModel.find(body).then(docs => {
     reply.send({
       code: 200,
       data: docs,

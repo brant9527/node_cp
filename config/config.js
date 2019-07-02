@@ -1,8 +1,8 @@
 const config = {
-  sid: 'fe65554958a7c113a67652dd70395f54', //开发者账号id
-  token: 'a97ffa30fed64a2f38692ef5fa2f9996', //开发者token
-  appid: '73b01ba7064b4e58a9b3e552eba2fb68', //应用id
-  templateid: '475378', //短信模板id
+  sid: '471bb420f1eb385d58595e8e0b8597e4', //开发者账号id
+  token: 'c18f6b9ac1f23851632f82041bf595c8', //开发者token
+  appid: '8b05b1633a9c425dac5096e998364be7', //应用id
+  templateid: '481233', //短信模板id
   uid: '' //透传uid   可为空
 };
 module.exports = config;
