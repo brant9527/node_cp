@@ -75,7 +75,7 @@ async function getLotteryData(out_config, ) {
               }
               let last_doc = lastDoc[0]
               let yc_currentNum = item.list[index]
-              let yc_expect_numisout = (Number(last_doc.expect) + 1) % 100 > 59 ? (Number(last_doc.expect) + 42) : (Number(last_doc.expect) + 1)
+              let yc_expect_numisout = expectFormat(lastDoc)
               let yc_expect = yc_expect_numisout
               let yc_result = {
                 expect: yc_expect + '',
@@ -754,6 +754,25 @@ function zuliuFn(planNum, lotterys) {
     }
   })
   return flag
+}
+
+function expectFormat(str) {
+  let expect = str.expect
+  let tmp = str.expect
+  let year = tmp.substr(0, 4)
+  let month = tmp.substr(4, 2)
+  let day = tmp.substr(6, 2)
+  let dateTmp = year + '-' + month + '-' + day
+  var timeStamp = new Date(dateTmp).getTime() + 86400000;
+  let date = new Date(timeStamp)
+  Y = date.getFullYear();
+  M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1);
+  D = date.getDate() < 10 ? ('0' + date.getDate()) : date.getDate()
+  if ((expect + 1) % 100 > 59) {
+    return ('' + Y + M + D + '0001')
+  } else {
+    return (expect + 1)
+  }
 }
 const timerInterval = setInterval(timer, 8000);
 module.exports = router; //暴露这个 router模块
