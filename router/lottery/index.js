@@ -54,10 +54,11 @@ async function getLotteryData(out_config, ) {
                 playCode: item.playCode,
                 expect: lastDoc[0].expect
               }
-              await mongoDo.planResultModel.remove(conditions).then(async docs => {
-                await console.log('删除')
+              await mongoDo.planResultModel.remove(conditions).then(docs => {
+                console.log('删除')
               })
               let obj = juagement(item, lastDoc[0])
+
               let index = 0
               if (obj) {
                 if (item.list.length !== item.index + 1) {
@@ -140,8 +141,8 @@ async function getLotteryData(out_config, ) {
             //     $or: ids
             //   }
             // }, docs)
-            await mongoDo.planResultModel.insertMany(results).then(async res => {
-              await console.log('新增')
+            await mongoDo.planResultModel.insertMany(results).then(res => {
+              console.log('新增')
             })
           })
         })
@@ -680,13 +681,21 @@ function zuxFn(planNum, lotterys) {
   let isdouble = false
   let ary = lotterys.slice(0)
   let last = ''
-  lotterys.forEach((item, index) => {
+  for (let index = 0; index < lotterys.length; index++) {
+    // const item = array[index];
     if (!ary.includes(last)) {
       last = ary.splice(0, 1)
     } else {
       isdouble = true
     }
-  })
+  }
+  // lotterys.forEach((item, index) => {
+  //   if (!ary.includes(last)) {
+  //     last = ary.splice(0, 1)
+  //   } else {
+  //     isdouble = true
+  //   }
+  // })
   if (isdouble) {
     return flase
   }
