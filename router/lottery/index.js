@@ -9,7 +9,7 @@ const cp_config = require('../../config/cpConfig')
 const axios = require('axios')
 const url = 'http://a.apiplus.net/newly.do'
 
-function getLotteryData(out_config, ) {
+async function getLotteryData(out_config, ) {
   let config = Object.assign({}, cp_config, out_config)
   // console.log('请求', config)
   axios.get(url, {
@@ -46,13 +46,16 @@ function getLotteryData(out_config, ) {
           }).then(async docs => {
             let results = []
             // let yc_results = []
-
-            docs.forEach(async item => {
-              await mongoDo.planPlaysModel.remove({
+            for (let docIdx = 0; docIdx < docs.length; docIdx++) {
+              const item = docs[docIdx];
+              let conditions = {
                 pcode: config.code,
                 code: item.code,
                 playCode: item.playCode,
                 expect: lastDoc[0].expect
+              }
+              await mongoDo.planResultModel.remove(conditions).then(async docs => {
+                await console.log('删除')
               })
               let obj = juagement(item, lastDoc[0])
               let index = 0
@@ -60,7 +63,7 @@ function getLotteryData(out_config, ) {
                 if (item.list.length !== item.index + 1) {
                   index = item.index + 1
                 }
-                mongoDo.planPlaysModel.update({
+                await mongoDo.planPlaysModel.update({
                   _id: item.id
                 }, {
                   'index': index,
@@ -86,7 +89,50 @@ function getLotteryData(out_config, ) {
                 createTime: new Date()
               }
               results.push(yc_result)
-            })
+            }
+            // await docs.forEach(async item => {
+            //   let conditions = {
+            //     pcode: config.code,
+            //     code: item.code,
+            //     playCode: item.playCode,
+            //     expect: lastDoc[0].expect
+            //   }
+            //   await mongoDo.planResultModel.remove(conditions).then(async docs => {
+            //     await console.log('删除')
+            //   })
+            //   let obj = juagement(item, lastDoc[0])
+            //   let index = 0
+            //   if (obj) {
+            //     if (item.list.length !== item.index + 1) {
+            //       index = item.index + 1
+            //     }
+            //     await mongoDo.planPlaysModel.update({
+            //       _id: item.id
+            //     }, {
+            //       'index': index,
+            //     }).then(res => {
+            //       console.log('更新成功')
+            //     })
+            //     results.push(obj)
+            //   }
+            //   let last_doc = lastDoc[0]
+            //   let yc_currentNum = item.list[index]
+            //   let yc_expect_numisout = (Number(last_doc.expect) + 1) % 100 > 59 ? (Number(last_doc.expect) + 42) : (Number(last_doc.expect) + 1)
+            //   let yc_expect = yc_expect_numisout
+            //   let yc_result = {
+            //     expect: yc_expect + '',
+            //     pcode: item.pcode,
+            //     code: item.code,
+            //     name: item.name,
+            //     playName: item.playName,
+            //     playCode: item.playCode,
+            //     planNum: yc_currentNum,
+            //     lotteryNum: '',
+            //     flag: '预测中',
+            //     createTime: new Date()
+            //   }
+            //   results.push(yc_result)
+            // })
             // 打算更新多条index 
             // let ids = docs.map(item => item._id)
             // mongoDo.planModel.updateMany({
@@ -94,7 +140,9 @@ function getLotteryData(out_config, ) {
             //     $or: ids
             //   }
             // }, docs)
-            mongoDo.planResultModel.insertMany(results)
+            await mongoDo.planResultModel.insertMany(results).then(async res => {
+              await console.log('新增')
+            })
           })
         })
       }).catch(err => {
