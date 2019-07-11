@@ -39,13 +39,29 @@ async function getLotteryData(out_config, ) {
         for (let index = 0; index < data.length; index++) {
           data[index].code = config.code;
         }
+        /**
+         * 查询最后一期结果
+         */
         let lastDoc = data.slice(-1)
+        /**
+         * 插入前几期未对比过的数据
+         */
         mongoDo.lotteryModel.insertMany(data).then(res => {
+          /**
+           * 查询彩种下计划的数据
+           */
           mongoDo.planPlaysModel.find({
             pcode: config.code
           }).then(async docs => {
             let results = []
             // let yc_results = []
+            if (docs.length === 0) {
+              console.log('没有计划数据')
+              return false
+            }
+            /**
+             * 获取所有计划下的所有玩法
+             */
             for (let docIdx = 0; docIdx < docs.length; docIdx++) {
               const item = docs[docIdx];
               let conditions = {
@@ -54,6 +70,9 @@ async function getLotteryData(out_config, ) {
                 playCode: item.playCode,
                 expect: lastDoc[0].expect
               }
+              /**
+               * 移除上个开奖结果
+               */
               await mongoDo.planResultModel.remove(conditions).then(docs => {
                 console.log('删除')
               })
@@ -75,7 +94,7 @@ async function getLotteryData(out_config, ) {
               }
               let last_doc = lastDoc[0]
               let yc_currentNum = item.list[index]
-              let yc_expect_numisout = expectFormat(lastDoc)
+              let yc_expect_numisout = expectFormat(last_doc)
               let yc_expect = yc_expect_numisout
               let yc_result = {
                 expect: yc_expect + '',
@@ -91,56 +110,7 @@ async function getLotteryData(out_config, ) {
               }
               results.push(yc_result)
             }
-            // await docs.forEach(async item => {
-            //   let conditions = {
-            //     pcode: config.code,
-            //     code: item.code,
-            //     playCode: item.playCode,
-            //     expect: lastDoc[0].expect
-            //   }
-            //   await mongoDo.planResultModel.remove(conditions).then(async docs => {
-            //     await console.log('删除')
-            //   })
-            //   let obj = juagement(item, lastDoc[0])
-            //   let index = 0
-            //   if (obj) {
-            //     if (item.list.length !== item.index + 1) {
-            //       index = item.index + 1
-            //     }
-            //     await mongoDo.planPlaysModel.update({
-            //       _id: item.id
-            //     }, {
-            //       'index': index,
-            //     }).then(res => {
-            //       console.log('更新成功')
-            //     })
-            //     results.push(obj)
-            //   }
-            //   let last_doc = lastDoc[0]
-            //   let yc_currentNum = item.list[index]
-            //   let yc_expect_numisout = (Number(last_doc.expect) + 1) % 100 > 59 ? (Number(last_doc.expect) + 42) : (Number(last_doc.expect) + 1)
-            //   let yc_expect = yc_expect_numisout
-            //   let yc_result = {
-            //     expect: yc_expect + '',
-            //     pcode: item.pcode,
-            //     code: item.code,
-            //     name: item.name,
-            //     playName: item.playName,
-            //     playCode: item.playCode,
-            //     planNum: yc_currentNum,
-            //     lotteryNum: '',
-            //     flag: '预测中',
-            //     createTime: new Date()
-            //   }
-            //   results.push(yc_result)
-            // })
-            // 打算更新多条index 
-            // let ids = docs.map(item => item._id)
-            // mongoDo.planModel.updateMany({
-            //   _id: {
-            //     $or: ids
-            //   }
-            // }, docs)
+
             await mongoDo.planResultModel.insertMany(results).then(res => {
               console.log('新增')
             })
@@ -162,8 +132,11 @@ router.get('/getLottery', function (request, reply) {
   let params = {
     code: request.query.code,
   }
+  let pageSize = Number(request.query.pageSize)
+  let pageNum = Number(request.query.pageNum)
   mongoDo.lotteryModel.find(params, null, {
-    limit: 1,
+    limit: pageSize || 1,
+    skip: pageSize * pageNum || 1,
     sort: {
       'opentimestamp': -1
     }
@@ -541,20 +514,6 @@ router.get('/getPlanPlaysResult', async function (request, reply) {
   }).catch(err => {
     reply.status(500).send(err)
   })
-  // mongoDo.planResultModel.find(params, null, {
-  //   sort: {
-
-  //   },
-  //   limit: 10 * count,
-
-  // }).then(docs => {
-  //   return reply.send({
-  //     code: 200,
-  //     data: docs
-  //   })
-  // }).catch(err => {
-  //   reply.status(500).send(err)
-  // })
 
 })
 
@@ -563,10 +522,10 @@ function timer() {
     rows: 3,
     code: 'cqssc'
   })
-  // getLotteryData({
-  //   rows: 3,
-  //   code: 'xjssc'
-  // })
+  getLotteryData({
+    rows: 3,
+    code: 'xjssc'
+  })
   // getLotteryData({
   //   rows: 3,
   //   code: 'bjpk10'
