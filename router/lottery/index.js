@@ -11,11 +11,11 @@ const url = 'http://a.apiplus.net/newly.do'
 
 async function getLotteryData(out_config, ) {
   let config = Object.assign({}, cp_config, out_config)
-  // console.log('请求', config)
   axios.get(url, {
     params: config
   }).then(res => {
     let data = []
+
     if (res.data && res.data.data) {
       data = res.data.data
 
@@ -62,58 +62,155 @@ async function getLotteryData(out_config, ) {
             /**
              * 获取所有计划下的所有玩法
              */
+            let yc_expect_numisout = expectFormat(lastDoc[0])
+
             for (let docIdx = 0; docIdx < docs.length; docIdx++) {
               const item = docs[docIdx];
               let conditions = {
                 pcode: config.code,
                 code: item.code,
                 playCode: item.playCode,
-                expect: lastDoc[0].expect
+                currentExpect: lastDoc[0].expect
               }
-              /**
-               * 移除上个开奖结果
-               */
-              await mongoDo.planResultModel.remove(conditions).then(docs => {
-                console.log('删除')
-              })
-              let obj = juagement(item, lastDoc[0])
+              let index = item.index
 
-              let index = 0
-              if (obj) {
+
+              /**
+               * 判断当前期数是否中奖
+               */
+              let obj = juagement(item, lastDoc[0])
+              let getFalg = obj.flag
+              let lotteryNum = obj.lotteryNum
+              /**
+               * 判断是否连续三次不中，或者一次中=》
+               * 1.更新数据库结果，不做预测
+               * 2.更新当前数据库预测结果
+               */
+              if ((getFalg === '挂' && (obj.currentExpect - obj.expect) >= (item.maxNum - 1)) || getFalg === '中') {
                 if (item.list.length !== item.index + 1) {
                   index = item.index + 1
+                } else {
+                  index = 0
                 }
-                await mongoDo.planPlaysModel.update({
-                  _id: item.id
+                mongoDo.planResultModel.update(conditions, {
+                  $set: {
+                    flag: getFalg,
+                    lotteryNum: lotteryNum
+                  }
                 }, {
-                  'index': index,
-                }).then(res => {
-                  console.log('更新成功')
+                  upsert: true
+                }).then(docs => {
+                  console.log('更新当前数据flag', getFalg)
                 })
-                results.push(obj)
+                /**
+                 * 判断已经进入下个预测，插入数据库
+                 */
+                let yc_currentNum = item.list[index]
+                let yc_expect = yc_expect_numisout
+                let yc_result = {
+                  expect: yc_expect + '',
+                  currentExpect: yc_expect + '',
+                  pcode: item.pcode,
+                  code: item.code,
+                  name: item.name,
+                  playName: item.playName,
+                  playCode: item.playCode,
+                  planNum: yc_currentNum,
+                  maxNum: item.maxNum,
+                  lotteryNum: '',
+                  flag: '预测中',
+                  createTime: new Date()
+                }
+                let yc_config = {
+                  expect: yc_expect + '',
+                  pcode: item.pcode,
+                  code: item.code,
+                  playCode: item.playCode,
+                }
+                await mongoDo.planResultModel.update(yc_config, {
+                  $set: yc_result
+                }, {
+                  upsert: true
+                }).then(res => {
+                  console.log('新增预测内容')
+                })
+                /**
+                 * 更新当前期数，和下次判断角标
+                 */
+                mongoDo.planPlaysModel.update({
+                  _id: item.id,
+                }, {
+                  $set: {
+                    'index': index,
+                    indexExpect: yc_expect //更新的是起始期数
+                  }
+                }).then(res => {
+                  console.log('更新计划下的某个玩法，index-当前期数')
+                })
               }
-              let last_doc = lastDoc[0]
-              let yc_currentNum = item.list[index]
-              let yc_expect_numisout = expectFormat(last_doc)
-              let yc_expect = yc_expect_numisout
-              let yc_result = {
-                expect: yc_expect + '',
-                pcode: item.pcode,
-                code: item.code,
-                name: item.name,
-                playName: item.playName,
-                playCode: item.playCode,
-                planNum: yc_currentNum,
-                lotteryNum: '',
-                flag: '预测中',
-                createTime: new Date()
+              // else if ((getFalg === '挂' && (obj.currentExpect - obj.expect) < item.maxNum - 1)) {
+              //   let extend = Object.assign({}, obj)
+              //   mongoDo.planResultModel.insertMany(extend).then(docs => {
+              //     console.log('插入数据')
+              //   })
+              // } 
+              else {
+                let extend = Object.assign({}, obj, {
+                  flag: '预测中',
+                  lotteryNum: '',
+                  currentExpect: yc_expect_numisout + ''
+                })
+
+                mongoDo.planResultModel.update(conditions, {
+                  $set: extend
+                }, {
+                  upsert: true
+                }).then(docs => {
+                  console.log('更新当前数据库成功')
+                })
               }
-              results.push(yc_result)
+
+
+
+              /**
+               * 无论如何更新当前期数的开奖结果
+               */
+
+
+
+              // let obj = juagement(item, lastDoc[0])
+
+              // let index = 0
+              // if (obj) {
+              //   if (item.list.length !== item.index + 1) {
+              //     index = item.index + 1
+              //   }
+              //   await mongoDo.planPlaysModel.update({
+              //     _id: item.id,
+              //   }, {
+              //     'index': index,
+              //     currentExpect: item.currentExpect
+              //   }).then(res => {
+              //     console.log('更新成功')
+              //   })
+              //   await mongoDo.planResultModel.update(conditions)
+              //   results.push(obj)
+              // }
+              /**
+               * 移除上个开奖结果,
+               * 由于多了期数，只能更新
+               * 获取当前期数是否在中奖预测中有出现
+               */
+              // let conditions_yc_resuilt = Object.assign({}, conditions, {
+              //   currentExpect: yc_expect_numisout
+              // })
+              // let currentResult = await mongoDo.planResultModel.findOne(conditions)
+              // if (!currentResult) {
+
+              // }
             }
 
-            await mongoDo.planResultModel.insertMany(results).then(res => {
-              console.log('新增')
-            })
+
           })
         })
       }).catch(err => {
@@ -121,6 +218,7 @@ async function getLotteryData(out_config, ) {
       })
     }
   }).catch(err => {
+    console.log('请求', err)
 
   })
 }
@@ -134,13 +232,18 @@ router.get('/getLottery', function (request, reply) {
   }
   let pageSize = Number(request.query.pageSize)
   let pageNum = Number(request.query.pageNum)
-  mongoDo.lotteryModel.find(params, null, {
+
+  let config = {
     limit: pageSize || 1,
-    skip: pageSize * pageNum || 1,
+    skip: pageSize * pageNum,
     sort: {
       'opentimestamp': -1
     }
-  }).then(docs => {
+  }
+  if (!pageSize * pageNum) {
+    delete config.skip
+  }
+  mongoDo.lotteryModel.find(params, null, config).then(docs => {
     return reply.send({
       code: 200,
       data: docs
@@ -346,7 +449,7 @@ router.post('/addPlanPlays', function (request, reply) {
     } else {
       reply.send({
         code: 506,
-        message: '失败'
+        message: '已存在'
       })
     }
 
@@ -539,9 +642,10 @@ function juagement(item, doc) {
   let index = item.index
   let list = item.list
   let currentNum = list[index]
-  let flagIsZuxuan = currentNum.indexOf('*') > -1
   let result = {
-    expect: doc.expect,
+    expect: item.indexExpect || doc.expect,
+    currentExpect: doc.expect,
+
     pcode: item.pcode,
     code: item.code,
     name: item.name,
@@ -571,14 +675,29 @@ function juagement(item, doc) {
       result.playName = '前二复式'
       break
     case 'h2zhix':
+      // lotterys = lottery.substr(-2, 2).split('')
+      // currentNums = currentNum.split('*')
+      // for (let index = 0; index < lotterys.length; index++) {
+      //   const element = lotterys[index];
+      //   if (currentNums[index] && !currentNums[index].indexOf(element)) {
+      //     flag = false
+      //   }
+      // }
+      if (zhixuanFn(currentNum, lottery.substr(-2, 2))) result.flag = '中'
 
-      if (currentNum.indexOf(lottery.substr(-2, 2)) > -1) result.flag = '中'
       result.playName = '后二直选'
 
       break
     case 'q2zhix':
-
-      if (currentNum.indexOf(lottery.substr(0, 2)) > -1) result.flag = '中'
+      // lotterys = lottery.substr(0, 2).split('')
+      // currentNums = currentNum.split('*')
+      // for (let index = 0; index < lotterys.length; index++) {
+      //   const element = lotterys[index];
+      //   if (currentNums[index] && !currentNums[index].indexOf(element)) {
+      //     flag = false
+      //   }
+      // }
+      if (zhixuanFn(currentNum, lottery.substr(0, 2))) result.flag = '中'
       result.playName = '前二直选'
 
       break
@@ -587,7 +706,16 @@ function juagement(item, doc) {
       result.playName = '后三复式'
       break
     case 'h3zhix':
-      if (currentNum.indexOf(lottery.substr(-3, 3)) > -1) result.flag = '中'
+      // lotterys = lottery.substr(-3, 3).split('')
+      // currentNums = currentNum.split('*')
+      // flag = true
+      // for (let index = 0; index < lotterys.length; index++) {
+      //   const element = lotterys[index];
+      //   if (!currentNums.indexOf(element)) {
+      //     flag = false
+      //   }
+      // }
+      if (zhixuanFn(currentNum, lottery.substr(-3, 3))) result.flag = '中'
       result.playName = '后三直选'
 
       break
@@ -715,8 +843,21 @@ function zuliuFn(planNum, lotterys) {
   return flag
 }
 
+function zhixuanFn(currentNum, lottery) {
+  let lotterys = lottery.split('')
+  let currentNums = currentNum.split('*')
+  let flag = true
+  for (let index = 0; index < lotterys.length; index++) {
+    const element = lotterys[index];
+    if (currentNums[index].indexOf(element) < 0) {
+      flag = false
+    }
+  }
+  return flag
+}
+
 function expectFormat(str) {
-  let expect = str.expect
+  let expect = Number(str.expect)
   let tmp = str.expect
   let year = tmp.substr(0, 4)
   let month = tmp.substr(4, 2)
@@ -727,8 +868,8 @@ function expectFormat(str) {
   Y = date.getFullYear();
   M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1);
   D = date.getDate() < 10 ? ('0' + date.getDate()) : date.getDate()
-  if ((expect + 1) % 100 > 59) {
-    return ('' + Y + M + D + '0001')
+  if (((expect + 1) % 100) > 59) {
+    return ('' + Y + M + D + '001')
   } else {
     return (expect + 1)
   }

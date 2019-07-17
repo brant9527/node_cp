@@ -41,6 +41,11 @@ let newsScheme = Scheme({
   editorContent: String,
   createTime: Number
 })
+let expertScheme = Scheme({
+  title: String,
+  editorContent: String,
+  createTime: Number
+})
 
 
 let lotteryScheme = Scheme({
@@ -73,7 +78,10 @@ let planPlaysScheme = Scheme({
   playCode: String,
   playName: String,
   list: Array,
-  index: Number
+  index: Number,
+  maxNum: Number,
+  indexExpect: String,
+
 })
 let numTempScheme = Scheme({
   name: String,
@@ -92,7 +100,9 @@ let planResultScheme = Scheme({
   pname: String,
   lotteryNum: String,
   flag: String,
-  createTime: Number
+  createTime: Number,
+  currentExpect: String,
+
 })
 mongoDo.tripModel = mongoose.model('trip', tripScheme);
 
@@ -199,6 +209,7 @@ mongoDo.numTempModel = mongoose.model('num_temp', numTempScheme);
 mongoDo.planResultModel = mongoose.model('plan_result', planResultScheme);
 mongoDo.noticeModel = mongoose.model('notice', noticeScheme);
 mongoDo.newsModel = mongoose.model('news', newsScheme);
+mongoDo.expertModel = mongoose.model('expert', expertScheme);
 
 
 

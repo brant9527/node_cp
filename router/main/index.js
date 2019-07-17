@@ -123,5 +123,63 @@ router.get('/getNews', function (request, reply) {
     })
   })
 })
-
+/**
+ * 新增专家
+ */
+router.post('/addExpert', function (request, reply) {
+  let body = xss(request.body)
+  body.createTime = new Date().getTime()
+  mongoDo.expertModel.create(body).then(res => {
+    reply.send({
+      code: 200,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+/**
+ * 删除专家
+ */
+router.post('/delExpert', function (request, reply) {
+  let body = request.body
+  let list = body.list
+  let ids = list.map(item => item._id)
+  mongoDo.expertModel.remove({
+    _id: {
+      $in: ids
+    }
+  }).then(res => {
+    reply.send({
+      code: 200,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 400,
+      message: err
+    })
+  })
+})
+/**
+ * 查询茶砖
+ */
+router.get('/getExpert', function (request, reply) {
+  let body = xss(request.query)
+  mongoDo.expertModel.find(body).then(docs => {
+    reply.send({
+      code: 200,
+      data: docs,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
 module.exports = router; //暴露这个 router模块

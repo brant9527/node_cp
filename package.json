@@ -24,6 +24,7 @@
     "express-session": "^1.16.2",
     "fastify": "^1.2.0",
     "jsonwebtoken": "^8.5.1",
+    "mockjs": "^1.0.1-beta3",
     "mongo": "^0.1.0",
     "mongoose": "^5.1.7",
     "morgan": "^1.9.1",
