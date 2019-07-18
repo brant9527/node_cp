@@ -97,8 +97,6 @@ async function getLotteryData(out_config, ) {
                     flag: getFalg,
                     lotteryNum: lotteryNum
                   }
-                }, {
-                  upsert: true
                 }).then(docs => {
                   console.log('更新当前数据flag', getFalg)
                 })
