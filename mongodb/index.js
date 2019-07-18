@@ -102,6 +102,7 @@ let planResultScheme = Scheme({
   flag: String,
   createTime: Number,
   currentExpect: String,
+  maxNum: String
 
 })
 mongoDo.tripModel = mongoose.model('trip', tripScheme);
