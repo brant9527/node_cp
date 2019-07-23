@@ -355,14 +355,27 @@ router.post('/addPlan', function (request, reply) {
 /**
  * 查询当前彩种的计划
  */
-router.get('/getPlan', function (request, reply) {
+router.get('/getPlan', async function (request, reply) {
   let params = {
     pcode: request.query.pcode
   }
-  mongoDo.planModel.find(params.pcode ? params : {}).then(docs => {
+
+  let pageSize = Number(request.query.pageSize)
+  let pageNum = Number(request.query.pageNum)
+
+  let config = {
+    limit: pageSize || 18,
+    skip: pageSize * pageNum
+  }
+  if (!config.skip) delete config.skip
+  let count = await mongoDo.planModel.count(params.pcode ? params : {})
+  mongoDo.planModel.find(params.pcode ? params : {}, null, config).then(docs => {
     reply.send({
       code: 200,
-      data: docs,
+      data: {
+        list: docs,
+        count: count
+      },
       message: '成功'
     })
   }).catch(err => {
