@@ -686,28 +686,19 @@ function juagement(item, doc) {
       result.playName = '前二复式'
       break
     case 'h2zhix':
-      // lotterys = lottery.substr(-2, 2).split('')
-      // currentNums = currentNum.split('*')
-      // for (let index = 0; index < lotterys.length; index++) {
-      //   const element = lotterys[index];
-      //   if (currentNums[index] && !currentNums[index].indexOf(element)) {
-      //     flag = false
-      //   }
-      // }
+
       if (zhixuanFn(currentNum, lottery.substr(-2, 2))) result.flag = '中'
 
       result.playName = '后二直选'
 
       break
+    case 'h2dans':
+      if (zhixuanFn(currentNum, lottery.substr(-2, 2))) result.flag = '中'
+      result.playName = '后二单式'
+
+      break
     case 'q2zhix':
-      // lotterys = lottery.substr(0, 2).split('')
-      // currentNums = currentNum.split('*')
-      // for (let index = 0; index < lotterys.length; index++) {
-      //   const element = lotterys[index];
-      //   if (currentNums[index] && !currentNums[index].indexOf(element)) {
-      //     flag = false
-      //   }
-      // }
+
       if (zhixuanFn(currentNum, lottery.substr(0, 2))) result.flag = '中'
       result.playName = '前二直选'
 
@@ -717,18 +708,15 @@ function juagement(item, doc) {
       result.playName = '后三复式'
       break
     case 'h3zhix':
-      // lotterys = lottery.substr(-3, 3).split('')
-      // currentNums = currentNum.split('*')
-      // flag = true
-      // for (let index = 0; index < lotterys.length; index++) {
-      //   const element = lotterys[index];
-      //   if (!currentNums.indexOf(element)) {
-      //     flag = false
-      //   }
-      // }
+
       if (zhixuanFn(currentNum, lottery.substr(-3, 3))) result.flag = '中'
       result.playName = '后三直选'
 
+      break
+    case 'h3dans':
+
+      if (zhixuanFn(currentNum, lottery.substr(-3, 3))) result.flag = '中'
+      result.playName = '后三单式'
       break
     case 'h3zu6':
       if (zuliuFn(currentNum, lottery.substr(-3, 3).split(''))) result.flag = '中'

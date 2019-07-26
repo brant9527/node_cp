@@ -47,10 +47,43 @@ router.post('/delNotice', function (request, reply) {
   })
 })
 /**
- * 查询彩种
+ * 查询公告列表
  */
 router.get('/getNotice', function (request, reply) {
-  mongoDo.noticeModel.find().then(docs => {
+  let pageSize = Number(request.query.pageSize)
+  let pageNum = Number(request.query.pageNum)
+
+  let config = {
+    limit: pageSize || 1,
+    skip: pageSize * pageNum,
+    sort: {
+      'opentimestamp': -1
+    }
+  }
+  if (!pageSize * pageNum) {
+    delete config.skip
+  }
+  mongoDo.noticeModel.find({}, null, config).then(docs => {
+    reply.send({
+      code: 200,
+      data: docs,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+/**
+ * 查询公告列表
+ */
+router.get('/getNoticeById', function (request, reply) {
+  let id = request.query.id
+  mongoDo.noticeModel.find({
+    _id: id
+  }).then(docs => {
     reply.send({
       code: 200,
       data: docs,

@@ -39,7 +39,8 @@ let noticeScheme = Scheme({
 let newsScheme = Scheme({
   title: String,
   editorContent: String,
-  createTime: Number
+  createTime: Number,
+  introduce: String
 })
 let expertScheme = Scheme({
   title: String,
