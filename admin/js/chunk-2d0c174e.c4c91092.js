@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([["chunk-2d0c174e"],{"45b9":function(e,n,t){"use strict";t.r(n);var u=t("2877"),c=function(e){e.options.__source="src/views/expert/index.vue"},i=Object(u.a)({},function(){var e=this.$createElement,n=this._self._c||e;return n("div",[n("router-view")],1)},[],!1,null,null,null);"function"==typeof c&&c(i);n.default=i.exports}}]);
