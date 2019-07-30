@@ -1,1 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([["chunk-2d0a30ec"],{"010e":function(n,e,t){"use strict";t.r(e);var u=t("2877"),c=function(n){n.options.__source="src/views/maku/test/index.vue"},o=Object(u.a)({},function(){var n=this,e=n.$createElement;return(n._self._c||e)("div",[n._v("\n  测试maku\n")])},[],!1,null,null,null);"function"==typeof c&&c(o);e.default=o.exports}}]);

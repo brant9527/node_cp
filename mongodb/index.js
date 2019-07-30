@@ -45,9 +45,18 @@ let newsScheme = Scheme({
 let expertScheme = Scheme({
   title: String,
   editorContent: String,
-  createTime: Number
-})
+  createTime: Number,
+  introduce: String
 
+})
+let productScheme = Scheme({
+  title: String,
+  editorContent: String,
+  createTime: Number,
+  introduce: String,
+  url: String
+
+})
 
 let lotteryScheme = Scheme({
   expect: String,
@@ -212,6 +221,8 @@ mongoDo.planResultModel = mongoose.model('plan_result', planResultScheme);
 mongoDo.noticeModel = mongoose.model('notice', noticeScheme);
 mongoDo.newsModel = mongoose.model('news', newsScheme);
 mongoDo.expertModel = mongoose.model('expert', expertScheme);
+mongoDo.productModel = mongoose.model('product', productScheme);
+
 
 
 

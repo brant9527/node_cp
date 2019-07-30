@@ -197,6 +197,9 @@ router.post('/delExpert', function (request, reply) {
     })
   })
 })
+
+
+
 /**
  * 查询茶砖
  */
@@ -212,6 +215,67 @@ router.get('/getExpert', function (request, reply) {
     reply.send({
       code: 402,
       message: '失败'
+    })
+  })
+})
+
+/**
+ * 查询茶砖
+ */
+router.get('/getProduct', function (request, reply) {
+  let body = xss(request.query)
+  mongoDo.productModel.find(body).then(docs => {
+    reply.send({
+      code: 200,
+      data: docs,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+
+/**
+ * 新增产品
+ */
+router.post('/addProduct', function (request, reply) {
+  let body = xss(request.body)
+  body.createTime = new Date().getTime()
+  mongoDo.productModel.create(body).then(res => {
+    reply.send({
+      code: 200,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+/**
+ * 删除产品
+ */
+router.post('/delProduct', function (request, reply) {
+  let body = request.body
+  let list = body.list
+  let ids = list.map(item => item._id)
+  mongoDo.productModel.remove({
+    _id: {
+      $in: ids
+    }
+  }).then(res => {
+    reply.send({
+      code: 200,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 400,
+      message: err
     })
   })
 })

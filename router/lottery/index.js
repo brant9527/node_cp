@@ -685,6 +685,10 @@ function juagement(item, doc) {
       if (fsFn(currentNum, lottery.substr(0, 2).split(''))) result.flag = '中'
       result.playName = '前二复式'
       break
+    case 'q2dans':
+      if (zhixuanFn(currentNum, lottery.substr(0, 2).split(''))) result.flag = '中'
+      result.playName = '前二单式'
+      break
     case 'h2zhix':
 
       if (zhixuanFn(currentNum, lottery.substr(-2, 2))) result.flag = '中'
@@ -726,7 +730,15 @@ function juagement(item, doc) {
       if (zusanFn(currentNum, lottery.substr(-3, 3).split(''))) result.flag = '中'
       result.playName = '后三组三'
       break
-    case 'h3fs':
+    case 'q3dans':
+      if (zhixuanFn(currentNum, lottery.substr(0, 3).split(''))) result.flag = '中'
+      result.playName = '前三单式'
+      break
+    case 'q3zhix':
+      if (zhixuanFn(currentNum, lottery.substr(0, 3).split(''))) result.flag = '中'
+      result.playName = '前三直选'
+      break
+    case 'q3fs':
       if (fsFn(currentNum, lottery.substr(0, 3).split(''))) result.flag = '中'
       result.playName = '前三复式'
       break

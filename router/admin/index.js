@@ -26,7 +26,8 @@ router.post('/login', function (request, reply) {
           result: true,
           code: 200,
           data: {
-            token: token
+            token: token,
+            userInfo: docs[0]
           }
         })
       });

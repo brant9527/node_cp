@@ -114,8 +114,46 @@ app.post('/register', function (request, reply) {
   })
 })
 /**
- * 验证短信code
+ * 注册
  */
+app.post('/change', function (request, reply) {
+  let num = request.body.num
+  let psw = request.body.psw
+  let oldPsw = request.body.oldPsw
+  mongoDo.accountModel.find({
+    num: num
+  }).then(async doc => {
+    if (doc.length < 1) return reply.send({
+      code: 422,
+      result: false,
+      message: '账号异常'
+    })
+
+    if (doc[0].psw != oldPsw) {
+      return reply.send({
+        code: 422,
+        result: false,
+        message: '输入的旧密码有误，请重新输入'
+      })
+    }
+    mongoDo.accountModel.update({
+      num
+    }, {
+      $set: {
+        psw
+      }
+    }).then(() => {
+      reply.send({
+        result: true,
+        code: 200
+      })
+    }).catch(err => {
+      reply.send(err)
+    })
+  }).catch(err => {
+    reply.send(err)
+  })
+})
 
 /**
  * 
@@ -133,7 +171,8 @@ app.post('/login', function (request, reply) {
           result: true,
           code: 200,
           data: {
-            token: token
+            token: token,
+            userInfo: docs[0].num
           }
         })
       })
