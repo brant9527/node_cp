@@ -55,7 +55,6 @@ let productScheme = Scheme({
   createTime: Number,
   introduce: String,
   url: String
-
 })
 
 let lotteryScheme = Scheme({
@@ -69,6 +68,10 @@ let lotteryTypeScheme = Scheme({
   name: String,
   url: String,
   code: String
+})
+let contactScheme = Scheme({
+  type: Number,
+  contact: String
 })
 let planScheme = Scheme({
   name: String,
@@ -118,98 +121,10 @@ let planResultScheme = Scheme({
 mongoDo.tripModel = mongoose.model('trip', tripScheme);
 
 mongoDo.accountModel = mongoose.model('account', accountScheme);
+mongoDo.contactModel = mongoose.model('contact', contactScheme);
 
 mongoDo.lotteryModel = mongoose.model('lottery_all', lotteryScheme);
 mongoDo.lotteryTypeModel = mongoose.model('lottery_type', lotteryTypeScheme);
-planScheme.statics.juagement = function (item, doc) {
-  let lottery = doc.replace(/\,/g, '')
-  let index = item.index
-  let list = item.list
-  let currentNum = list[index]
-  let flagIsZuxuan = currentNum.indexOf('*') > -1
-  let result = {
-    expect: doc.expect.splice(doc.expect.substr(-3, 3)),
-    code: doc.code,
-    pcode: doc.code,
-    planNum: currentNum,
-    lotteryNum: lottery,
-    flag: '挂'
-  }
-  switch (item.code) {
-    case 'h1':
-
-      if (currentNum.indexOf(lottery.substr(-1, 1))) result.flag = '中'
-      result.playName = '后一'
-      break
-    case 'h2fs':
-      if (fsFn(currentNum, lottery.substr(-2, 2).split(''))) result.flag = '中'
-      result.playName = '后二复式'
-      break
-    case 'h2zux':
-      if (zuxFn(currentNum, lottery.split(''))) result.flag = '中'
-      result.playName = '后二组选'
-      break
-    case 'q2fs':
-      if (fsFn(currentNum, lottery.substr(0, 2).split(''))) result.flag = '中'
-      result.playName = '前二复式'
-      break
-    case 'h2zhix':
-
-      if (currentNum.indexOf(lottery.substr(-2, 2))) result.flag = '中'
-      result.playName = '后二直选'
-
-      break
-    case 'q2zhix':
-
-      if (currentNum.indexOf(lottery.substr(0, 2))) result.flag = '中'
-      result.playName = '前二直选'
-
-      break
-    case 'h3fs':
-      if (fsFn(currentNum, lottery.substr(-3, 3).split(''))) result.flag = '中'
-      result.playName = '后三复式'
-      break
-    case 'h3zhix':
-      if (currentNum.indexOf(lottery.substr(-3, 3))) result.flag = '中'
-      result.playName = '后三直选'
-
-      break
-    case 'h3zu6':
-      return {
-        name: '后三组六',
-      }
-      break
-    case 'h3zu3':
-      return {
-        name: '后三组三',
-      }
-      break
-    case 'h3fs':
-      if (fsFn(currentNum, lottery.substr(0, 3).split(''))) result.flag = '中'
-      result.playName = '前三复式'
-      break
-    case 'q3zu6':
-      return {
-        name: '前三组六',
-      }
-      break
-    case 'q3zu3':
-      return {
-        name: '前三组三',
-      }
-      break
-    case 'sxfs':
-      if (fsFn(currentNum, lottery.substr(0, 4).split('')) || fsFn(currentNum, lottery.substr(1, 5).split(''))) result.flag = '中'
-      result.playName = '四星复式'
-
-      break
-    case 'wxfs':
-      if (fsFn(currentNum, lottery.split(''))) result.flag = '中'
-      result.playName = '五星复式'
-      break
-  }
-  return result
-}
 
 mongoDo.planModel = mongoose.model('plan', planScheme);
 mongoDo.planPlaysModel = mongoose.model('plan_plays', planPlaysScheme);

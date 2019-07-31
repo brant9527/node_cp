@@ -279,4 +279,51 @@ router.post('/delProduct', function (request, reply) {
     })
   })
 })
+
+
+/**
+ * 新增产品
+ */
+router.post('/addContact', function (request, reply) {
+  let body = xss(request.body)
+  let wx = {
+    type: body.wx ? 1 : 2,
+    contact: body.wx
+  }
+  let qq = {
+    type: body.wx ? 1 : 2,
+    contact: body.qq
+  }
+  let arys = []
+  arys.push(wx, qq)
+  mongoDo.contactModel.remove()
+  mongoDo.contactModel.insertMany(arys).then(res => {
+    reply.send({
+      code: 200,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+/**
+ * 查询账号
+ */
+router.get('/getContact', function (request, reply) {
+  mongoDo.contactModel.find().then(docs => {
+    reply.send({
+      code: 200,
+      data: docs,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
 module.exports = router; //暴露这个 router模块
