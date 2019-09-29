@@ -15,9 +15,13 @@ const xss = require('node-xss').clean;
 router.post('/login', function (request, reply) {
   let body = xss(request.body)
 
-  body.role = 1
+  body.role = '1'
 
-  mongoDo.accountModel.find(body).then(docs => {
+  mongoDo.accountModel.find({
+    num: body.num + '',
+    role: body.role + '',
+    psw: body.psw + ''
+  }).then(docs => {
     if (docs.length > 0) {
       jwt.sign({
         name: request.body.num,
