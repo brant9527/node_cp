@@ -19,7 +19,7 @@ router.post('/login', function (request, reply) {
 
   mongoDo.accountModel.find({
     num: body.num + '',
-    role: body.role + '',
+    // role: body.role + '',
     psw: body.psw + ''
   }).then(docs => {
     if (docs.length > 0) {
