@@ -29,6 +29,7 @@ const main = require('./main/index')
 
 app.use('/', express.static('public'))
 app.use('/admin', express.static('admin'));
+app.use('/official', express.static('official'));
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({
   extended: false

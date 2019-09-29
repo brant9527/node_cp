@@ -60,7 +60,7 @@ router.get('/getNotice', function (request, reply) {
       'opentimestamp': -1
     }
   }
-  if (!pageSize * pageNum) {
+  if (!(pageSize * pageNum)) {
     delete config.skip
   }
   mongoDo.noticeModel.find({}, null, config).then(docs => {
@@ -98,7 +98,7 @@ router.get('/getNoticeById', function (request, reply) {
 })
 //配置路由
 /**
- * 新增彩种
+ * 新增新闻
  */
 router.post('/addNews', function (request, reply) {
   let body = xss(request.body)
@@ -116,7 +116,7 @@ router.post('/addNews', function (request, reply) {
   })
 })
 /**
- * 删除公告
+ * 删除新闻
  */
 router.post('/delNews', function (request, reply) {
   let body = request.body
@@ -143,7 +143,20 @@ router.post('/delNews', function (request, reply) {
  */
 router.get('/getNews', function (request, reply) {
   let body = xss(request.query)
-  mongoDo.newsModel.find(body).then(docs => {
+  let pageSize = Number(request.query.pageSize)
+  let pageNum = Number(request.query.pageNum)
+
+  let config = {
+    limit: pageSize || 1,
+    skip: pageSize * pageNum,
+    sort: {
+      'opentimestamp': -1
+    }
+  }
+  if (!(pageSize * pageNum)) {
+    delete config.skip
+  }
+  mongoDo.newsModel.find({}, null, config).then(docs => {
     reply.send({
       code: 200,
       data: docs,
@@ -310,10 +323,174 @@ router.post('/addContact', function (request, reply) {
   })
 })
 /**
- * 查询账号
+ * 查询联系方式
  */
 router.get('/getContact', function (request, reply) {
   mongoDo.contactModel.find().then(docs => {
+    reply.send({
+      code: 200,
+      data: docs,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+/**
+ * 新增玩法
+ */
+router.post('/addPlays', function (request, reply) {
+  let body = xss(request.body)
+  body.createTime = new Date().getTime()
+
+  mongoDo.playsModel.create(body).then(res => {
+    reply.send({
+      code: 200,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+/**
+ * 删除技巧
+ */
+router.post('/delPlays', function (request, reply) {
+  let body = request.body
+  let list = body.list
+  let ids = list.map(item => item._id)
+  mongoDo.playsModel.remove({
+    _id: {
+      $in: ids
+    }
+  }).then(res => {
+    reply.send({
+      code: 200,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 400,
+      message: err
+    })
+  })
+})
+/**
+ * 查询技巧列表
+ */
+router.get('/getPlays', function (request, reply) {
+  let pageSize = Number(request.query.pageSize)
+  let pageNum = Number(request.query.pageNum)
+
+  let config = {
+    limit: pageSize || 1,
+    skip: pageSize * pageNum,
+    sort: {
+      'opentimestamp': -1
+    }
+  }
+  if (!(pageSize * pageNum)) {
+    delete config.skip
+  }
+  mongoDo.playsModel.find({}, null, config).then(docs => {
+    reply.send({
+      code: 200,
+      data: docs,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+/**
+ * 查询技巧列表byid
+ */
+router.get('/getPlaysById', function (request, reply) {
+  let id = request.query.id
+  mongoDo.playsModel.find({
+    _id: id
+  }).then(docs => {
+    reply.send({
+      code: 200,
+      data: docs,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+/**
+ * 新增答疑
+ */
+router.post('/addAnswer', function (request, reply) {
+  let body = xss(request.body)
+  body.createTime = new Date().getTime()
+
+  mongoDo.answerModel.create(body).then(res => {
+    reply.send({
+      code: 200,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 402,
+      message: '失败'
+    })
+  })
+})
+/**
+ * 删除答疑
+ */
+router.post('/delAnswer', function (request, reply) {
+  let body = request.body
+  let list = body.list
+  let ids = list.map(item => item._id)
+  mongoDo.answerModel.remove({
+    _id: {
+      $in: ids
+    }
+  }).then(res => {
+    reply.send({
+      code: 200,
+      message: '成功'
+    })
+  }).catch(err => {
+    reply.send({
+      code: 400,
+      message: err
+    })
+  })
+})
+/**
+ * 查询答疑列表
+ */
+router.get('/getAnswer', function (request, reply) {
+  let pageSize = Number(request.query.pageSize)
+  let pageNum = Number(request.query.pageNum)
+
+  let config = {
+    limit: pageSize || 1,
+    skip: pageSize * pageNum,
+    sort: {
+      'opentimestamp': -1
+    }
+  }
+  if (!(pageSize * pageNum)) {
+    delete config.skip
+  }
+  mongoDo.answerModel.find({}, null, config).then(docs => {
     reply.send({
       code: 200,
       data: docs,

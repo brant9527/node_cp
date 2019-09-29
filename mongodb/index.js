@@ -36,6 +36,18 @@ let noticeScheme = Scheme({
   editorContent: String,
   createTime: Number
 })
+let playsScheme = Scheme({
+  title: String,
+  editorContent: String,
+  createTime: Number,
+  introduce: String
+})
+let answerScheme = Scheme({
+  title: String,
+  editorContent: String,
+  createTime: Number,
+  introduce: String
+})
 let newsScheme = Scheme({
   title: String,
   editorContent: String,
@@ -96,6 +108,7 @@ let planPlaysScheme = Scheme({
   indexExpect: String,
 
 })
+
 let numTempScheme = Scheme({
   name: String,
   type: String,
@@ -137,8 +150,16 @@ mongoDo.noticeModel = mongoose.model('notice', noticeScheme);
 mongoDo.newsModel = mongoose.model('news', newsScheme);
 mongoDo.expertModel = mongoose.model('expert', expertScheme);
 mongoDo.productModel = mongoose.model('product', productScheme);
+/**
+ * playsModel 玩法技巧
+ */
 
+mongoDo.playsModel = mongoose.model('plays', playsScheme);
 
+/**
+ * 答疑
+ */
 
+mongoDo.answerModel = mongoose.model('answer', answerScheme);
 
 module.exports = mongoDo
