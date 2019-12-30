@@ -3,7 +3,7 @@ let app = require('./router/index')
 // require('./mongodb/index')
 
 
-var server = app.listen(80, '0.0.0.0', function() {
+var server = app.listen(8080, '0.0.0.0', function() {
 
     var host = server.address().address
     console.log(JSON.stringify(server.address()))
