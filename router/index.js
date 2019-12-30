@@ -1,38 +1,38 @@
 let express = require('express')
 let app = express()
 
-const path = require('path')
-let logger = require('morgan');
+// const path = require('path')
+// let logger = require('morgan');
 
-const segfaultHandler = require('segfault-handler');
-segfaultHandler.registerHandler("crash.log");
-let mongoDo = require('../mongodb/index')
-let bodyParser = require('body-parser');
-const smsUtil = require('../config/index.js')
-const jwt = require('jsonwebtoken'); //用来生成token
-const keyConfig = require('../config/secretKey')
-    // const uid = require('uid')
-const {
-    setExKey,
-    getKey
-} = require('../config/redis')
-const xss = require('node-xss').clean;
-const session = require('express-session')
-const cookieParser = require('cookie-parser')
-const order = require('../config/path')
-    // const random = require('string-random')
-const middleLogin = require('../middlewares/checklogin')
+// const segfaultHandler = require('segfault-handler');
+// segfaultHandler.registerHandler("crash.log");
+// let mongoDo = require('../mongodb/index')
+// let bodyParser = require('body-parser');
+// const smsUtil = require('../config/index.js')
+// const jwt = require('jsonwebtoken'); //用来生成token
+// const keyConfig = require('../config/secretKey')
+// const uid = require('uid')
+// const {
+//     setExKey,
+//     getKey
+// } = require('../config/redis')
+// const xss = require('node-xss').clean;
+// const session = require('express-session')
+// const cookieParser = require('cookie-parser')
+// const order = require('../config/path')
+// const random = require('string-random')
+// const middleLogin = require('../middlewares/checklogin')
 
-const admin = require('./admin/index')
-const lottery = require('./lottery/index')
-const main = require('./main/index')
+// const admin = require('./admin/index')
+// const lottery = require('./lottery/index')
+// const main = require('./main/index')
 
 app.use('/', express.static('soul'))
 app.use('/soul', express.static('soul'));
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({
-    extended: false
-}));
+// app.use(bodyParser.json())
+// app.use(bodyParser.urlencoded({
+//     extended: false
+// }));
 
 // app.use(logger('dev'))
 
